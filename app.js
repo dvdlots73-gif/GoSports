@@ -109,7 +109,14 @@ const isFav = (name) => name && state.favs.has(name);
 function toggleFav(name) {
   state.favs.has(name) ? state.favs.delete(name) : state.favs.add(name);
   store.set('favs', [...state.favs]);
+  syncAlertTeams();
   render();
+}
+
+// Android app only: tell it which football teams get goal/card alerts (followed teams + ★ favourites).
+// Non-football favourites (drivers, fighters) are harmless: the app only matches football team names.
+function syncAlertTeams() {
+  try { window.Android?.setAlertTeams(JSON.stringify([...FOLLOW.filter((t) => t.sport === 'football').map((t) => t.name), ...state.favs])); } catch { /* not in the app */ }
 }
 
 // ---------- loaders: each returns { events: [...] } ----------
@@ -1015,5 +1022,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
+syncAlertTeams();
 render();
 refresh();
