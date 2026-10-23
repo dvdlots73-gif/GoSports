@@ -1,8 +1,8 @@
 # Scoreboard
 
-A personal Flashscore-style web app for English football, NFL, golf, F1, UFC and boxing.
+A personal Flashscore-style web app for English football, NFL, golf, F1, UFC, boxing and PDC darts.
 
-- **Live**: in-play scores, refreshed every 30 seconds while anything is live
+- **Live**: in-play scores, refreshed every 30 seconds while anything is live. Live and finished football matches list goalscorers (pens, own goals) and red cards; NFL games show the top passer, rusher and receiver
 - **Today**: today's matches, sessions, leaderboards and fight cards
 - **Upcoming**: the next two weeks, grouped by day (plus golf and UFC calendars)
 - **Tables**: Premier League to League Two, NFL conferences, F1 drivers and constructors, golf leaderboard, UFC rankings
@@ -16,10 +16,10 @@ Tap a team or driver in a table to make it a favourite. Its matches are then pin
 |---|---|
 | Football, NFL, golf, UFC, live F1 | ESPN's public JSON endpoints (unofficial) |
 | F1 schedule & standings | [Jolpica](https://github.com/jolpica/jolpica-f1) |
-| Boxing | [TheSportsDB](https://www.thesportsdb.com) (free test key) |
+| Boxing, PDC darts | [TheSportsDB](https://www.thesportsdb.com) (free test key; darts shows the latest and next tournament day only) |
 | UFC rankings | ufc.com/rankings, scraped by GitHub Actions |
 | Oldham club news | oldhamathletic.co.uk news API (read live in the browser) |
-| News | ESPN news endpoints, plus BBC Sport RSS (Oldham, Man Utd, golf, boxing) and the Oldham fans' forum (shown as opinion) fetched by GitHub Actions every 3 hours |
+| News | ESPN news endpoints, plus BBC Sport RSS (Oldham, Man Utd, golf, boxing, darts) and the Oldham fans' forum (shown as opinion) fetched by GitHub Actions every 3 hours |
 
 The data is for personal use only.
 

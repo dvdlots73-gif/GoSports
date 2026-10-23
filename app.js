@@ -38,8 +38,8 @@ async function clubNews() {
 const IRISH_FLAGS =new Set(['Ireland', 'Northern Ireland']);
 const IRISH_NEWS = /McIlroy|Lowry|S[eé]amus Power|Harrington|McKibbin|McDowell|Darren Clarke|Leona Maguire|Stephanie Meadow|\bIrish\b/i;
 // ESPN news per sport (boxing has none on ESPN; it comes from BBC via data/news.json).
-const NEWS_PATHS = { football: ['soccer/eng.1', 'soccer/eng.2'], nfl: ['football/nfl'], golf: ['golf/pga', 'golf/eur'], f1: ['racing/f1'], ufc: ['mma/ufc'], boxing: [] };
-const BBC_FOR_SPORT = { golf: 'golf', boxing: 'boxing' };
+const NEWS_PATHS = { football: ['soccer/eng.1', 'soccer/eng.2'], nfl: ['football/nfl'], golf: ['golf/pga', 'golf/eur'], f1: ['racing/f1'], ufc: ['mma/ufc'], boxing: [], darts: [] };
+const BBC_FOR_SPORT = { golf: 'golf', boxing: 'boxing', darts: 'darts' };
 
 const SPORTS = [
   { id: 'all', label: 'All' },
@@ -49,6 +49,7 @@ const SPORTS = [
   { id: 'f1', label: 'F1' },
   { id: 'ufc', label: 'UFC' },
   { id: 'boxing', label: 'Boxing' },
+  { id: 'darts', label: 'Darts' },
 ];
 
 // ---------- small helpers ----------
@@ -138,6 +139,8 @@ function espnMatch(ev, sport, league, awayFirst) {
   const away = cs.find((c) => c.homeAway === 'away') || cs[1];
   const st = espnStatus(ev, comp);
   const a = espnTeam(home), b = espnTeam(away);
+  a.inc = incidents(comp, home?.team?.id);
+  b.inc = incidents(comp, away?.team?.id);
   return {
     kind: 'match', sport, league, id: ev.id,
     start: new Date(ev.date), ...st,
@@ -145,7 +148,28 @@ function espnMatch(ev, sport, league, awayFirst) {
     tv: [...new Set((comp.broadcasts || []).flatMap((x) => x.names || []))].join(', '),
     venue: comp.venue?.fullName,
     note: comp.notes?.[0]?.headline,
+    // NFL: game's top passer / rusher / receiver, e.g. "Pass: C.J. Stroud 24/34, 312 YDS, 3 TD".
+    leaders: (comp.leaders || []).map((l) => {
+      const x = l.leaders?.[0];
+      return x && `${LEADER_LABEL[l.name] || l.shortDisplayName || l.name}: ${x.athlete?.shortName || x.athlete?.displayName} ${x.displayValue}`;
+    }).filter(Boolean).slice(0, 3),
   };
+}
+
+const LEADER_LABEL = { passingYards: 'Pass', rushingYards: 'Rush', receivingYards: 'Rec' };
+
+// Football: one team's goals and red cards from ESPN's match details, grouped by player,
+// e.g. "Hinshelwood 12', 84' · Gross 30' pen · 🟥 Danso 17'". ESPN credits own goals to the team that benefits.
+function incidents(comp, teamId) {
+  const byPlayer = new Map();
+  for (const d of comp.details || []) {
+    if (!teamId || d.team?.id !== teamId || !(d.scoringPlay || d.redCard)) continue;
+    const p = d.athletesInvolved?.[0] || {};
+    const key = `${d.redCard ? '🟥 ' : ''}${p.shortName || p.displayName || '?'}`;
+    const min = `${d.clock?.displayValue || ''}${d.ownGoal ? ' og' : d.penaltyKick ? ' pen' : ''}`;
+    byPlayer.set(key, [...(byPlayer.get(key) || []), min]);
+  }
+  return [...byPlayer].map(([who, mins]) => `${who} ${mins.join(', ')}`).join(' · ');
 }
 
 // ESPN now returns 400 for date ranges on soccer/NFL, but whole months (YYYYMM) work.
@@ -356,7 +380,36 @@ async function loadBoxing() {
   return { events: [...map.values()] };
 }
 
-const LOADERS = { football: loadFootball, nfl: loadNFL, golf: loadGolf, f1: loadF1, ufc: loadUFC, boxing: loadBoxing };
+// PDC darts from TheSportsDB league 4554. Each event is one tournament day; its result text
+// fills in as matches finish ("Round One x8", "Littler 6-3 O'Connor", "Rock v Dobey").
+// ponytail: the free key only returns the latest and next day, so there's no long-range calendar.
+const DARTS_LEAGUE = 4554;
+
+function dartsEvent(e) {
+  const start = new Date(`${e.dateEvent}T00:00:00Z`); // TheSportsDB gives no session times for darts
+  const lines = String(e.strResult || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
+    const won = l.match(/^(.+?) (\d+)-(\d+) (.+)$/);
+    if (won) return { a: won[1], as: +won[2], bs: +won[3], b: won[4] };
+    const due = l.match(/^(.+?) v (.+)$/);
+    return due ? { a: due[1], b: due[2] } : { heading: l };
+  });
+  const today = dayKey(start) === todayKey();
+  return {
+    kind: 'darts', sport: 'darts', league: 'PDC', id: `tsdb-${e.idEvent}`, name: e.strEvent.replace(/\s+/g, ' '),
+    start, venue: [e.strVenue, e.strCity].filter(Boolean).join(', '), lines,
+    state: today && lines.some((l) => l.a) ? 'in' : dayKey(start) > todayKey() || today ? 'pre' : 'post',
+  };
+}
+
+async function loadDarts() {
+  const res = await Promise.allSettled(['eventspastleague', 'eventsnextleague'].map((p) => getJSON(`${TSDB}/${p}.php?id=${DARTS_LEAGUE}`)));
+  if (res.every((r) => r.status === 'rejected')) throw new Error('No darts data');
+  const map = new Map();
+  for (const r of res) for (const e of (r.status === 'fulfilled' && (r.value.events || r.value.results)) || []) map.set(e.idEvent, dartsEvent(e));
+  return { events: [...map.values()] };
+}
+
+const LOADERS = { football: loadFootball, nfl: loadNFL, golf: loadGolf, f1: loadF1, ufc: loadUFC, boxing: loadBoxing, darts: loadDarts };
 
 // ---------- tables ----------
 
@@ -445,7 +498,7 @@ async function refresh(force = false) {
   }));
   if (state.tab === 'tables') {
     const key = tableKey();
-    if (!['golf', 'boxing'].includes(key) && (force || !state.tables[key] || Date.now() - state.tables[key].at > 5 * 60e3)) {
+    if (!['golf', 'boxing', 'darts'].includes(key) && (force || !state.tables[key] || Date.now() - state.tables[key].at > 5 * 60e3)) {
       try { state.tables[key] = { data: await loadTable(key), at: Date.now() }; }
       catch (e) { state.tables[key] = { error: e.message || 'Failed to load', at: Date.now() }; }
     }
@@ -494,7 +547,17 @@ function matchRow(e) {
     <div class="teams">${e.sides.map(teamRow).join('')}</div>
     <div class="scores${e.state === 'in' ? ' live' : ''}">${showScore ? e.sides.map((s) => `<span>${esc(s.score ?? '')}</span>`).join('') : ''}</div>
     ${meta ? `<div class="meta">${esc(meta)}</div>` : ''}
+    ${showScore ? scorerLines(e) : ''}
   </div>`;
+}
+
+// Scorers under live and finished matches: one line per team in row order, then NFL leaders.
+function scorerLines(e) {
+  const lines = [
+    ...e.sides.filter((s) => s.inc).map((s) => `<span class="who">${esc(s.name)}</span> ${esc(s.inc)}`),
+    ...(e.leaders || []).map(esc),
+  ];
+  return lines.length ? `<div class="meta inc">${lines.join('<br>')}</div>` : '';
 }
 
 function boardCard(e, limit = 10) {
@@ -520,6 +583,21 @@ function cardCard(e, limit = 6) {
   </div>`;
 }
 
+function dartsCard(e) {
+  const status = e.state === 'in' ? '<span class="dot"></span> Today' : esc(e.state === 'post' ? `Results · ${dayLabel(e.start)}` : dayLabel(e.start));
+  const rows = e.lines.map((l) => {
+    if (l.heading) return `<div class="list-row sub">${esc(l.heading)}</div>`;
+    if (l.as == null) return `<div class="list-row"><div class="main"><div class="a">${esc(l.a)} v ${esc(l.b)}</div></div><div class="side">To play</div></div>`;
+    const [w, x] = l.as > l.bs ? ['<b>', ''] : ['', '<b>'];
+    const end = (t) => (t ? t.replace('<', '</') : '');
+    return `<div class="list-row"><div class="main"><div class="a">${w}${esc(l.a)}${end(w)} ${l.as}–${l.bs} ${x}${esc(l.b)}${end(x)}</div></div><div class="side">FT</div></div>`;
+  }).join('');
+  return `<div class="card">
+    <div class="board-head"><div class="ttl">${esc(e.name)}</div><div class="st${e.state === 'in' ? ' live' : ''}">${status}${e.venue ? ' · ' + esc(e.venue) : ''}</div></div>
+    ${rows || '<div class="err">Draw not published yet.</div>'}
+  </div>`;
+}
+
 function listRow(e) {
   let a = e.name, b = e.league, side = `${dayLabel(e.start)} ${time(e.start)}`;
   if (e.kind === 'session') { a = `${e.session}`; b = `${e.name}${e.venue ? ' · ' + e.venue : ''}`; side = time(e.start); }
@@ -538,6 +616,7 @@ function renderEventCards(events, matchFn = matchRow) {
     if (e.kind === 'match') rows.push(matchFn(e));
     else if (e.kind === 'board') { flush(); out.push(boardCard(e)); }
     else if (e.kind === 'card') { flush(); out.push(cardCard(e)); }
+    else if (e.kind === 'darts') { flush(); out.push(dartsCard(e)); }
     else rows.push(listRow(e));
   }
   flush();
@@ -666,11 +745,27 @@ async function loadNews() {
         espn(t.path, `&team=${t.id}`),
         t.club ? t.club().catch(() => []) : [],
       ]);
-      return { ...t, standing: standingLine(t, table), sched: [...(res?.events || []), ...(fix?.events || [])], news: [...news, ...club] };
+      const sched = [...(res?.events || []), ...(fix?.events || [])];
+      await withScorers(t, sched);
+      return { ...t, standing: standingLine(t, table), sched, news: [...news, ...club] };
     })),
     Promise.all(Object.entries(NEWS_PATHS).map(async ([s, paths]) => [s, (await Promise.all(paths.map((p) => espn(p)))).flat()])),
   ]);
   return { bbc: bbc.feeds || {}, teams, general: Object.fromEntries(general) };
+}
+
+// The team schedule feed has no goal details, so swap the last result for the same game from that
+// day's scoreboard, which has scorers and NFL leaders. ESPN files late US games under the previous
+// (US) day, so the day before is tried too.
+async function withScorers(t, sched) {
+  const last = sched.filter((e) => e.competitions?.[0]?.status?.type?.state === 'post')
+    .sort((a, b) => new Date(a.date) - new Date(b.date)).pop();
+  if (!last) return;
+  for (const back of [0, 1]) {
+    const day = ymd(new Date(new Date(last.date) - back * 864e5));
+    const full = (await getJSON(`${ESPN}/${t.path}/scoreboard?dates=${day}`).catch(() => null))?.events?.find((e) => e.id === last.id);
+    if (full) { sched[sched.indexOf(last)] = full; return; }
+  }
 }
 
 const ordinal = (n) => (n ? `${n}${['th', 'st', 'nd', 'rd'][(n % 100 > 10 && n % 100 < 14) || n % 10 > 3 ? 0 : n % 10]}` : '');
@@ -750,6 +845,7 @@ const TABLE_SUBS = {
   f1: [{ id: 'f1:drivers', label: 'Drivers' }, { id: 'f1:teams', label: 'Constructors' }, { id: 'f1:last', label: 'Last race' }],
   ufc: [{ id: 'ufc', label: 'Rankings' }],
   boxing: [{ id: 'boxing', label: 'Results' }],
+  darts: [{ id: 'darts', label: 'Results' }],
 };
 
 function tableSportId() {
@@ -820,8 +916,8 @@ function renderTables() {
   const subs = TABLE_SUBS[sp];
   if (subs.length > 1) html += `<div class="seg" data-role="sub">${subs.map((s) => `<button data-v="${s.id}" class="${s.id === key ? 'on' : ''}">${esc(s.label)}</button>`).join('')}</div>`;
 
-  // Golf and boxing reuse the event feeds rather than a standings endpoint.
-  if (sp === 'golf' || sp === 'boxing') {
+  // Golf, boxing and darts reuse the event feeds rather than a standings endpoint.
+  if (sp === 'golf' || sp === 'boxing' || sp === 'darts') {
     const d = state.data[sp];
     if (!d) { ensureLoaded(sp); return html + '<div class="empty">Loading…</div>'; }
     if (d.error) return html + `<div class="err">⚠︎ ${esc(d.error)}</div>`;
@@ -829,6 +925,10 @@ function renderTables() {
       const boards = d.events.filter((e) => e.kind === 'board');
       return html + (boards.length ? boards.map((b) => boardCard(b, 200)).join('') : '<div class="empty">No tournament leaderboard right now.</div>') +
         '<div class="hint">Season-long FedEx Cup / world rankings aren\'t available from a free source.</div>';
+    }
+    if (sp === 'darts') {
+      return html + renderEventCards(d.events.slice().sort((a, b) => b.start - a.start)) +
+        '<div class="hint">PDC Order of Merit isn\'t available from a free source.</div>';
     }
     const past = d.events.filter((e) => e.state === 'post').sort((a, b) => b.start - a.start);
     return html + '<div class="hint">Boxing has no league table — recent results below.</div>' +

@@ -11,6 +11,7 @@ const FEEDS = {
   manutd: `${BBC}/football/teams/manchester-united/rss.xml`,
   golf: `${BBC}/golf/rss.xml`,
   boxing: `${BBC}/boxing/rss.xml`,
+  darts: `${BBC}/darts/rss.xml`,
   forum: 'https://members.boardhost.com/oafc/rss', // Oldham fans' message board: opinion, not news
 };
 
