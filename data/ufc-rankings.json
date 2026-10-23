@@ -1,0 +1,1589 @@
+{
+ "updated": "2026-10-23T18:31:20.324Z",
+ "divisions": [
+  {
+   "name": "Men's Pound-for-Pound Top Rank",
+   "champion": "Islam Makhachev",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Islam Makhachev"
+    },
+    {
+     "rank": "2",
+     "name": "Alexander Volkanovski"
+    },
+    {
+     "rank": "3",
+     "name": "Justin Gaethje"
+    },
+    {
+     "rank": "4",
+     "name": "Petr Yan"
+    },
+    {
+     "rank": "5",
+     "name": "Ilia Topuria"
+    },
+    {
+     "rank": "6",
+     "name": "Joshua Van"
+    },
+    {
+     "rank": "7",
+     "name": "Tom Aspinall"
+    },
+    {
+     "rank": "7",
+     "name": "Sean Strickland"
+    },
+    {
+     "rank": "9",
+     "name": "Merab Dvalishvili"
+    },
+    {
+     "rank": "10",
+     "name": "Alex Pereira"
+    },
+    {
+     "rank": "11",
+     "name": "Ciryl Gane"
+    },
+    {
+     "rank": "12",
+     "name": "Khamzat Chimaev"
+    },
+    {
+     "rank": "13",
+     "name": "Arman Tsarukyan"
+    },
+    {
+     "rank": "14",
+     "name": "Alexandre Pantoja"
+    },
+    {
+     "rank": "15",
+     "name": "Carlos Ulberg"
+    }
+   ]
+  },
+  {
+   "name": "Flyweight",
+   "champion": "Joshua Van",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Alexandre Pantoja"
+    },
+    {
+     "rank": "2",
+     "name": "Manel Kape"
+    },
+    {
+     "rank": "3",
+     "name": "Brandon Royval"
+    },
+    {
+     "rank": "4",
+     "name": "Tatsuro Taira"
+    },
+    {
+     "rank": "5",
+     "name": "Kyoji Horiguchi"
+    },
+    {
+     "rank": "6",
+     "name": "Lone’er Kavanagh"
+    },
+    {
+     "rank": "7",
+     "name": "Asu Almabayev"
+    },
+    {
+     "rank": "8",
+     "name": "Brandon Moreno"
+    },
+    {
+     "rank": "9",
+     "name": "Amir Albazi"
+    },
+    {
+     "rank": "10",
+     "name": "Ramazan Temirov"
+    },
+    {
+     "rank": "11",
+     "name": "Tim Elliott"
+    },
+    {
+     "rank": "12",
+     "name": "Steve Erceg"
+    },
+    {
+     "rank": "13",
+     "name": "Sumudaerji"
+    },
+    {
+     "rank": "14",
+     "name": "Tagir Ulanbekov"
+    },
+    {
+     "rank": "15",
+     "name": "Alex Perez"
+    }
+   ]
+  },
+  {
+   "name": "Bantamweight",
+   "champion": "Petr Yan",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Merab Dvalishvili"
+    },
+    {
+     "rank": "2",
+     "name": "Sean O'Malley"
+    },
+    {
+     "rank": "3",
+     "name": "Song Yadong"
+    },
+    {
+     "rank": "4",
+     "name": "Umar Nurmagomedov"
+    },
+    {
+     "rank": "5",
+     "name": "Mario Bautista"
+    },
+    {
+     "rank": "6",
+     "name": "Cory Sandhagen"
+    },
+    {
+     "rank": "7",
+     "name": "Payton Talbott"
+    },
+    {
+     "rank": "8",
+     "name": "David Martinez"
+    },
+    {
+     "rank": "9",
+     "name": "Aiemann Zahabi"
+    },
+    {
+     "rank": "10",
+     "name": "Raul Rosas Jr."
+    },
+    {
+     "rank": "11",
+     "name": "Marlon Vera"
+    },
+    {
+     "rank": "12",
+     "name": "Deiveson Figueiredo"
+    },
+    {
+     "rank": "13",
+     "name": "Marcus McGhee"
+    },
+    {
+     "rank": "14",
+     "name": "Raoni Barcelos"
+    },
+    {
+     "rank": "15",
+     "name": "Bryce Mitchell"
+    }
+   ]
+  },
+  {
+   "name": "Featherweight",
+   "champion": "Alexander Volkanovski",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Movsar Evloev"
+    },
+    {
+     "rank": "2",
+     "name": "Diego Lopes"
+    },
+    {
+     "rank": "3",
+     "name": "Lerone Murphy"
+    },
+    {
+     "rank": "4",
+     "name": "Aljamain Sterling"
+    },
+    {
+     "rank": "5",
+     "name": "Jean Silva"
+    },
+    {
+     "rank": "6",
+     "name": "Yair Rodriguez"
+    },
+    {
+     "rank": "7",
+     "name": "Arnold Allen"
+    },
+    {
+     "rank": "8",
+     "name": "Youssef Zalal"
+    },
+    {
+     "rank": "9",
+     "name": "Kevin Vallejos"
+    },
+    {
+     "rank": "10",
+     "name": "Steve Garcia"
+    },
+    {
+     "rank": "11",
+     "name": "Aaron Pico"
+    },
+    {
+     "rank": "12",
+     "name": "Melquizael Costa"
+    },
+    {
+     "rank": "13",
+     "name": "Brian Ortega"
+    },
+    {
+     "rank": "14",
+     "name": "Patricio Pitbull"
+    },
+    {
+     "rank": "15",
+     "name": "David Onama"
+    }
+   ]
+  },
+  {
+   "name": "Lightweight",
+   "champion": "Justin Gaethje",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Ilia Topuria"
+    },
+    {
+     "rank": "2",
+     "name": "Arman Tsarukyan"
+    },
+    {
+     "rank": "3",
+     "name": "Charles Oliveira"
+    },
+    {
+     "rank": "4",
+     "name": "Max Holloway"
+    },
+    {
+     "rank": "5",
+     "name": "Paddy Pimblett"
+    },
+    {
+     "rank": "6",
+     "name": "Benoît Saint Denis"
+    },
+    {
+     "rank": "7",
+     "name": "Quillan Salkilld"
+    },
+    {
+     "rank": "8",
+     "name": "Mauricio Ruffy"
+    },
+    {
+     "rank": "9",
+     "name": "Salahdine Parnasse"
+    },
+    {
+     "rank": "10",
+     "name": "Mateusz Gamrot"
+    },
+    {
+     "rank": "11",
+     "name": "Rafael Fiziev"
+    },
+    {
+     "rank": "12",
+     "name": "Renato Moicano"
+    },
+    {
+     "rank": "13",
+     "name": "Dan Hooker"
+    },
+    {
+     "rank": "14",
+     "name": "Tom Nolan"
+    },
+    {
+     "rank": "15",
+     "name": "Beneil Dariush"
+    }
+   ]
+  },
+  {
+   "name": "Welterweight",
+   "champion": "Islam Makhachev",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Ian Machado Garry"
+    },
+    {
+     "rank": "2",
+     "name": "Carlos Prates"
+    },
+    {
+     "rank": "3",
+     "name": "Michael Morales"
+    },
+    {
+     "rank": "4",
+     "name": "Jack Della Maddalena"
+    },
+    {
+     "rank": "5",
+     "name": "Gabriel Bonfim"
+    },
+    {
+     "rank": "6",
+     "name": "Sean Brady"
+    },
+    {
+     "rank": "7",
+     "name": "Belal Muhammad"
+    },
+    {
+     "rank": "8",
+     "name": "Leon Edwards"
+    },
+    {
+     "rank": "9",
+     "name": "Kamaru Usman"
+    },
+    {
+     "rank": "10",
+     "name": "Mike Malott"
+    },
+    {
+     "rank": "11",
+     "name": "Yaroslav Amosov"
+    },
+    {
+     "rank": "12",
+     "name": "Uroš Medić"
+    },
+    {
+     "rank": "12",
+     "name": "Joaquin Buckley"
+    },
+    {
+     "rank": "14",
+     "name": "Daniel Rodriguez"
+    },
+    {
+     "rank": "15",
+     "name": "Neil Magny"
+    }
+   ]
+  },
+  {
+   "name": "Middleweight",
+   "champion": "Sean Strickland",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Khamzat Chimaev"
+    },
+    {
+     "rank": "2",
+     "name": "Dricus Du Plessis"
+    },
+    {
+     "rank": "3",
+     "name": "Nassourdine Imavov"
+    },
+    {
+     "rank": "4",
+     "name": "Brendan Allen"
+    },
+    {
+     "rank": "5",
+     "name": "Caio Borralho"
+    },
+    {
+     "rank": "6",
+     "name": "Joe Pyfer"
+    },
+    {
+     "rank": "7",
+     "name": "Gregory Rodrigues"
+    },
+    {
+     "rank": "8",
+     "name": "Anthony Hernandez"
+    },
+    {
+     "rank": "9",
+     "name": "Israel Adesanya"
+    },
+    {
+     "rank": "10",
+     "name": "Christian Leroy Duncan"
+    },
+    {
+     "rank": "11",
+     "name": "Jared Cannonier"
+    },
+    {
+     "rank": "12",
+     "name": "Abus Magomedov"
+    },
+    {
+     "rank": "13",
+     "name": "Ikram Aliskerov"
+    },
+    {
+     "rank": "14",
+     "name": "Bo Nickal"
+    },
+    {
+     "rank": "15",
+     "name": "Shara Magomedov"
+    }
+   ]
+  },
+  {
+   "name": "Light Heavyweight",
+   "champion": "Carlos Ulberg",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Magomed Ankalaev"
+    },
+    {
+     "rank": "2",
+     "name": "Jiří Procházka"
+    },
+    {
+     "rank": "3",
+     "name": "Alex Pereira"
+    },
+    {
+     "rank": "4",
+     "name": "Khalil Rountree Jr."
+    },
+    {
+     "rank": "5",
+     "name": "Navajo Stirling"
+    },
+    {
+     "rank": "6",
+     "name": "Paulo Costa"
+    },
+    {
+     "rank": "7",
+     "name": "Azamat Murzakanov"
+    },
+    {
+     "rank": "8",
+     "name": "Dominick Reyes"
+    },
+    {
+     "rank": "9",
+     "name": "Jan Błachowicz"
+    },
+    {
+     "rank": "10",
+     "name": "Bogdan Guskov"
+    },
+    {
+     "rank": "11",
+     "name": "Robert Whittaker"
+    },
+    {
+     "rank": "12",
+     "name": "Alonzo Menifield"
+    },
+    {
+     "rank": "13",
+     "name": "Muhammad Saidov"
+    },
+    {
+     "rank": "14",
+     "name": "Reinier de Ridder"
+    },
+    {
+     "rank": "15",
+     "name": "Nikita Krylov"
+    }
+   ]
+  },
+  {
+   "name": "Heavyweight",
+   "champion": "Ciryl Gane",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Tom Aspinall"
+    },
+    {
+     "rank": "2",
+     "name": "Alexander Volkov"
+    },
+    {
+     "rank": "3",
+     "name": "Sergei Pavlovich"
+    },
+    {
+     "rank": "4",
+     "name": "Josh Hokit"
+    },
+    {
+     "rank": "5",
+     "name": "Curtis Blaydes"
+    },
+    {
+     "rank": "6",
+     "name": "Waldo Cortes Acosta"
+    },
+    {
+     "rank": "7",
+     "name": "Rizvan Kuniev"
+    },
+    {
+     "rank": "8",
+     "name": "Vitor Petrino"
+    },
+    {
+     "rank": "9",
+     "name": "Serghei Spivac"
+    },
+    {
+     "rank": "10",
+     "name": "Ante Delija"
+    },
+    {
+     "rank": "11",
+     "name": "Valter Walker"
+    },
+    {
+     "rank": "12",
+     "name": "Derrick Lewis"
+    },
+    {
+     "rank": "12",
+     "name": "Tyrell Fortune"
+    },
+    {
+     "rank": "14",
+     "name": "Aleksandar Rakić"
+    },
+    {
+     "rank": "15",
+     "name": "Mario Pinto"
+    }
+   ]
+  },
+  {
+   "name": "Women's Pound-for-Pound Top Rank",
+   "champion": "Valentina Shevchenko",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Valentina Shevchenko"
+    },
+    {
+     "rank": "2",
+     "name": "Kayla Harrison"
+    },
+    {
+     "rank": "3",
+     "name": "Zhang Weili"
+    },
+    {
+     "rank": "4",
+     "name": "Natalia Silva"
+    },
+    {
+     "rank": "5",
+     "name": "Mackenzie Dern"
+    },
+    {
+     "rank": "6",
+     "name": "Alexa Grasso"
+    },
+    {
+     "rank": "7",
+     "name": "Manon Fiorot"
+    },
+    {
+     "rank": "8",
+     "name": "Tatiana Suarez"
+    },
+    {
+     "rank": "9",
+     "name": "Erin Blanchfield"
+    },
+    {
+     "rank": "10",
+     "name": "Julianna Peña"
+    },
+    {
+     "rank": "11",
+     "name": "Virna Jandiroba"
+    },
+    {
+     "rank": "12",
+     "name": "Jasmine Jasudavicius"
+    },
+    {
+     "rank": "13",
+     "name": "Rose Namajunas"
+    },
+    {
+     "rank": "14",
+     "name": "Raquel Pennington"
+    },
+    {
+     "rank": "15",
+     "name": "Denise Gomes"
+    }
+   ]
+  },
+  {
+   "name": "Women's Strawweight",
+   "champion": "Mackenzie Dern",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Zhang Weili"
+    },
+    {
+     "rank": "2",
+     "name": "Tatiana Suarez"
+    },
+    {
+     "rank": "3",
+     "name": "Virna Jandiroba"
+    },
+    {
+     "rank": "4",
+     "name": "Denise Gomes"
+    },
+    {
+     "rank": "5",
+     "name": "Gillian Robertson"
+    },
+    {
+     "rank": "6",
+     "name": "Yan Xiaonan"
+    },
+    {
+     "rank": "7",
+     "name": "Fatima Kline"
+    },
+    {
+     "rank": "8",
+     "name": "Loopy Godinez"
+    },
+    {
+     "rank": "9",
+     "name": "Alexia Thainara"
+    },
+    {
+     "rank": "10",
+     "name": "Jéssica Andrade"
+    },
+    {
+     "rank": "11",
+     "name": "Tabatha Ricci"
+    },
+    {
+     "rank": "12",
+     "name": "Amanda Lemos"
+    },
+    {
+     "rank": "13",
+     "name": "Amanda Ribas"
+    },
+    {
+     "rank": "14",
+     "name": "Angela Hill"
+    },
+    {
+     "rank": "15",
+     "name": "Mizuki"
+    }
+   ]
+  },
+  {
+   "name": "Women's Flyweight",
+   "champion": "Natalia Silva",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Valentina Shevchenko"
+    },
+    {
+     "rank": "2",
+     "name": "Alexa Grasso"
+    },
+    {
+     "rank": "3",
+     "name": "Manon Fiorot"
+    },
+    {
+     "rank": "4",
+     "name": "Jasmine Jasudavicius"
+    },
+    {
+     "rank": "5",
+     "name": "Erin Blanchfield"
+    },
+    {
+     "rank": "6",
+     "name": "Rose Namajunas"
+    },
+    {
+     "rank": "7",
+     "name": "Maycee Barber"
+    },
+    {
+     "rank": "8",
+     "name": "Wang Cong"
+    },
+    {
+     "rank": "9",
+     "name": "Tracy Cortez"
+    },
+    {
+     "rank": "10",
+     "name": "Miranda Maverick"
+    },
+    {
+     "rank": "11",
+     "name": "Karine Silva"
+    },
+    {
+     "rank": "12",
+     "name": "Casey O'Neill"
+    },
+    {
+     "rank": "13",
+     "name": "Eduarda Moura"
+    },
+    {
+     "rank": "14",
+     "name": "Gabriella Fernandes"
+    },
+    {
+     "rank": "15",
+     "name": "Regina Tarin"
+    }
+   ]
+  },
+  {
+   "name": "Women's Bantamweight",
+   "champion": "Kayla Harrison",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Julianna Peña"
+    },
+    {
+     "rank": "2",
+     "name": "Joselyne Edwards"
+    },
+    {
+     "rank": "3",
+     "name": "Ailin Perez"
+    },
+    {
+     "rank": "4",
+     "name": "Norma Dumont"
+    },
+    {
+     "rank": "5",
+     "name": "Raquel Pennington"
+    },
+    {
+     "rank": "6",
+     "name": "Yana Santos"
+    },
+    {
+     "rank": "7",
+     "name": "Luana Santos"
+    },
+    {
+     "rank": "8",
+     "name": "Jacqueline Cavalcanti"
+    },
+    {
+     "rank": "9",
+     "name": "Macy Chiasson"
+    },
+    {
+     "rank": "10",
+     "name": "Karol Rosa"
+    },
+    {
+     "rank": "11",
+     "name": "Bia Mesquita"
+    },
+    {
+     "rank": "12",
+     "name": "Michelle Montague"
+    },
+    {
+     "rank": "13",
+     "name": "Nora Cornolle"
+    },
+    {
+     "rank": "14",
+     "name": "Chelsea Chandler"
+    },
+    {
+     "rank": "15",
+     "name": "Alice Pereira"
+    }
+   ]
+  },
+  {
+   "name": "Flyweight",
+   "champion": "Joshua Van",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Manel Kape"
+    },
+    {
+     "rank": "2",
+     "name": "Alexandre Pantoja"
+    },
+    {
+     "rank": "3",
+     "name": "Brandon Royval"
+    },
+    {
+     "rank": "4",
+     "name": "Tatsuro Taira"
+    },
+    {
+     "rank": "5",
+     "name": "Asu Almabayev"
+    },
+    {
+     "rank": "6",
+     "name": "Lone’er Kavanagh"
+    },
+    {
+     "rank": "7",
+     "name": "Ramazan Temirov"
+    },
+    {
+     "rank": "8",
+     "name": "Kyoji Horiguchi"
+    },
+    {
+     "rank": "9",
+     "name": "Amir Albazi"
+    },
+    {
+     "rank": "10",
+     "name": "Brandon Moreno"
+    },
+    {
+     "rank": "11",
+     "name": "Sumudaerji"
+    },
+    {
+     "rank": "12",
+     "name": "Mitch Raposo"
+    },
+    {
+     "rank": "13",
+     "name": "Imanol Rodriguez"
+    },
+    {
+     "rank": "14",
+     "name": "Rei Tsuruya"
+    },
+    {
+     "rank": "15",
+     "name": "Charles Johnson"
+    }
+   ]
+  },
+  {
+   "name": "Bantamweight",
+   "champion": "Petr Yan",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Merab Dvalishvili"
+    },
+    {
+     "rank": "2",
+     "name": "Song Yadong"
+    },
+    {
+     "rank": "3",
+     "name": "Sean O'Malley"
+    },
+    {
+     "rank": "4",
+     "name": "Mario Bautista"
+    },
+    {
+     "rank": "5",
+     "name": "Umar Nurmagomedov"
+    },
+    {
+     "rank": "6",
+     "name": "Cory Sandhagen"
+    },
+    {
+     "rank": "7",
+     "name": "David Martinez"
+    },
+    {
+     "rank": "8",
+     "name": "Raul Rosas Jr."
+    },
+    {
+     "rank": "9",
+     "name": "Marcus McGhee"
+    },
+    {
+     "rank": "10",
+     "name": "Payton Talbott"
+    },
+    {
+     "rank": "11",
+     "name": "Montel Jackson"
+    },
+    {
+     "rank": "12",
+     "name": "Aiemann Zahabi"
+    },
+    {
+     "rank": "13",
+     "name": "Bryce Mitchell"
+    },
+    {
+     "rank": "14",
+     "name": "Marlon Vera"
+    },
+    {
+     "rank": "15",
+     "name": "Raoni Barcelos"
+    }
+   ]
+  },
+  {
+   "name": "Featherweight",
+   "champion": "Alexander Volkanovski",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Movsar Evloev"
+    },
+    {
+     "rank": "2",
+     "name": "Diego Lopes"
+    },
+    {
+     "rank": "3",
+     "name": "Lerone Murphy"
+    },
+    {
+     "rank": "4",
+     "name": "Aljamain Sterling"
+    },
+    {
+     "rank": "5",
+     "name": "Jean Silva"
+    },
+    {
+     "rank": "6",
+     "name": "Arnold Allen"
+    },
+    {
+     "rank": "7",
+     "name": "Pat Sabatini"
+    },
+    {
+     "rank": "8",
+     "name": "Pavel Andrusca"
+    },
+    {
+     "rank": "9",
+     "name": "Youssef Zalal"
+    },
+    {
+     "rank": "10",
+     "name": "Kevin Vallejos"
+    },
+    {
+     "rank": "11",
+     "name": "Joanderson Brito"
+    },
+    {
+     "rank": "12",
+     "name": "Melquizael Costa"
+    },
+    {
+     "rank": "13",
+     "name": "Steve Garcia"
+    },
+    {
+     "rank": "14",
+     "name": "Aaron Pico"
+    },
+    {
+     "rank": "15",
+     "name": "Jamall Emmers"
+    }
+   ]
+  },
+  {
+   "name": "Lightweight",
+   "champion": "Justin Gaethje",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Ilia Topuria"
+    },
+    {
+     "rank": "2",
+     "name": "Arman Tsarukyan"
+    },
+    {
+     "rank": "3",
+     "name": "Charles Oliveira"
+    },
+    {
+     "rank": "4",
+     "name": "Max Holloway"
+    },
+    {
+     "rank": "5",
+     "name": "Paddy Pimblett"
+    },
+    {
+     "rank": "6",
+     "name": "Quillan Salkilld"
+    },
+    {
+     "rank": "7",
+     "name": "Benoît Saint Denis"
+    },
+    {
+     "rank": "8",
+     "name": "Renato Moicano"
+    },
+    {
+     "rank": "9",
+     "name": "Mateusz Gamrot"
+    },
+    {
+     "rank": "10",
+     "name": "Mauricio Ruffy"
+    },
+    {
+     "rank": "11",
+     "name": "Tom Nolan"
+    },
+    {
+     "rank": "12",
+     "name": "Rafael Fiziev"
+    },
+    {
+     "rank": "13",
+     "name": "Tofiq Musayev"
+    },
+    {
+     "rank": "14",
+     "name": "Grant Dawson"
+    },
+    {
+     "rank": "15",
+     "name": "Esteban Ribovics"
+    }
+   ]
+  },
+  {
+   "name": "Welterweight",
+   "champion": "Islam Makhachev",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Carlos Prates"
+    },
+    {
+     "rank": "2",
+     "name": "Ian Machado Garry"
+    },
+    {
+     "rank": "3",
+     "name": "Michael Morales"
+    },
+    {
+     "rank": "4",
+     "name": "Jack Della Maddalena"
+    },
+    {
+     "rank": "5",
+     "name": "Sean Brady"
+    },
+    {
+     "rank": "6",
+     "name": "Gabriel Bonfim"
+    },
+    {
+     "rank": "7",
+     "name": "Belal Muhammad"
+    },
+    {
+     "rank": "8",
+     "name": "Mike Malott"
+    },
+    {
+     "rank": "9",
+     "name": "Uroš Medić"
+    },
+    {
+     "rank": "10",
+     "name": "Leon Edwards"
+    },
+    {
+     "rank": "11",
+     "name": "Kamaru Usman"
+    },
+    {
+     "rank": "12",
+     "name": "Joaquin Buckley"
+    },
+    {
+     "rank": "13",
+     "name": "Yaroslav Amosov"
+    },
+    {
+     "rank": "14",
+     "name": "Kevin Holland"
+    },
+    {
+     "rank": "15",
+     "name": "Daniel Rodriguez"
+    }
+   ]
+  },
+  {
+   "name": "Middleweight",
+   "champion": "Sean Strickland",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Khamzat Chimaev"
+    },
+    {
+     "rank": "2",
+     "name": "Dricus Du Plessis"
+    },
+    {
+     "rank": "3",
+     "name": "Nassourdine Imavov"
+    },
+    {
+     "rank": "4",
+     "name": "Brendan Allen"
+    },
+    {
+     "rank": "5",
+     "name": "Joe Pyfer"
+    },
+    {
+     "rank": "6",
+     "name": "Caio Borralho"
+    },
+    {
+     "rank": "7",
+     "name": "Gregory Rodrigues"
+    },
+    {
+     "rank": "8",
+     "name": "Anthony Hernandez"
+    },
+    {
+     "rank": "9",
+     "name": "Israel Adesanya"
+    },
+    {
+     "rank": "10",
+     "name": "Ikram Aliskerov"
+    },
+    {
+     "rank": "11",
+     "name": "Christian Leroy Duncan"
+    },
+    {
+     "rank": "12",
+     "name": "Bo Nickal"
+    },
+    {
+     "rank": "13",
+     "name": "Abus Magomedov"
+    },
+    {
+     "rank": "14",
+     "name": "Roman Kopylov"
+    },
+    {
+     "rank": "15",
+     "name": "Edmen Shahbazyan"
+    }
+   ]
+  },
+  {
+   "name": "Light Heavyweight",
+   "champion": "Carlos Ulberg",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Alex Pereira"
+    },
+    {
+     "rank": "2",
+     "name": "Magomed Ankalaev"
+    },
+    {
+     "rank": "3",
+     "name": "Jiří Procházka"
+    },
+    {
+     "rank": "4",
+     "name": "Paulo Costa"
+    },
+    {
+     "rank": "5",
+     "name": "Khalil Rountree Jr."
+    },
+    {
+     "rank": "6",
+     "name": "Navajo Stirling"
+    },
+    {
+     "rank": "7",
+     "name": "Dominick Reyes"
+    },
+    {
+     "rank": "8",
+     "name": "Reinier de Ridder"
+    },
+    {
+     "rank": "9",
+     "name": "Azamat Murzakanov"
+    },
+    {
+     "rank": "10",
+     "name": "Alonzo Menifield"
+    },
+    {
+     "rank": "11",
+     "name": "Bogdan Guskov"
+    },
+    {
+     "rank": "12",
+     "name": "Robert Whittaker"
+    },
+    {
+     "rank": "13",
+     "name": "Muhammad Saidov"
+    },
+    {
+     "rank": "14",
+     "name": "Modestas Bukauskas"
+    },
+    {
+     "rank": "15",
+     "name": "Abdul Rakhman Yakhyaev"
+    }
+   ]
+  },
+  {
+   "name": "Heavyweight",
+   "champion": "Ciryl Gane",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Tom Aspinall"
+    },
+    {
+     "rank": "2",
+     "name": "Sergei Pavlovich"
+    },
+    {
+     "rank": "3",
+     "name": "Alex Pereira"
+    },
+    {
+     "rank": "4",
+     "name": "Alexander Volkov"
+    },
+    {
+     "rank": "5",
+     "name": "Rizvan Kuniev"
+    },
+    {
+     "rank": "6",
+     "name": "Josh Hokit"
+    },
+    {
+     "rank": "7",
+     "name": "Curtis Blaydes"
+    },
+    {
+     "rank": "8",
+     "name": "Waldo Cortes Acosta"
+    },
+    {
+     "rank": "9",
+     "name": "Vitor Petrino"
+    },
+    {
+     "rank": "10",
+     "name": "Mario Pinto"
+    },
+    {
+     "rank": "11",
+     "name": "Valter Walker"
+    },
+    {
+     "rank": "12",
+     "name": "Johnny Walker"
+    },
+    {
+     "rank": "13",
+     "name": "Brando Peričić"
+    },
+    {
+     "rank": "14",
+     "name": "Serghei Spivac"
+    },
+    {
+     "rank": "15",
+     "name": "Anthony Wint"
+    }
+   ]
+  },
+  {
+   "name": "Women's Strawweight",
+   "champion": "Mackenzie Dern",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Zhang Weili"
+    },
+    {
+     "rank": "2",
+     "name": "Virna Jandiroba"
+    },
+    {
+     "rank": "3",
+     "name": "Tatiana Suarez"
+    },
+    {
+     "rank": "4",
+     "name": "Denise Gomes"
+    },
+    {
+     "rank": "5",
+     "name": "Gillian Robertson"
+    },
+    {
+     "rank": "6",
+     "name": "Fatima Kline"
+    },
+    {
+     "rank": "7",
+     "name": "Alexia Thainara"
+    },
+    {
+     "rank": "8",
+     "name": "Loopy Godinez"
+    },
+    {
+     "rank": "9",
+     "name": "Piera Rodriguez"
+    },
+    {
+     "rank": "10",
+     "name": "Yan Xiaonan"
+    },
+    {
+     "rank": "11",
+     "name": "Mizuki"
+    },
+    {
+     "rank": "12",
+     "name": "Tabatha Ricci"
+    },
+    {
+     "rank": "13",
+     "name": "Talita Alencar"
+    },
+    {
+     "rank": "14",
+     "name": "Amanda Lemos"
+    },
+    {
+     "rank": "15",
+     "name": "Sam Hughes"
+    }
+   ]
+  },
+  {
+   "name": "Women's Flyweight",
+   "champion": "Natalia Silva",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Valentina Shevchenko"
+    },
+    {
+     "rank": "2",
+     "name": "Alexa Grasso"
+    },
+    {
+     "rank": "3",
+     "name": "Jasmine Jasudavicius"
+    },
+    {
+     "rank": "4",
+     "name": "Manon Fiorot"
+    },
+    {
+     "rank": "5",
+     "name": "Erin Blanchfield"
+    },
+    {
+     "rank": "6",
+     "name": "Zhang Weili"
+    },
+    {
+     "rank": "7",
+     "name": "Rose Namajunas"
+    },
+    {
+     "rank": "8",
+     "name": "Wang Cong"
+    },
+    {
+     "rank": "9",
+     "name": "Maycee Barber"
+    },
+    {
+     "rank": "10",
+     "name": "Tracy Cortez"
+    },
+    {
+     "rank": "11",
+     "name": "Casey O'Neill"
+    },
+    {
+     "rank": "12",
+     "name": "Miranda Maverick"
+    },
+    {
+     "rank": "13",
+     "name": "Regina Tarin"
+    },
+    {
+     "rank": "14",
+     "name": "Karine Silva"
+    },
+    {
+     "rank": "15",
+     "name": "Carli Judice"
+    }
+   ]
+  },
+  {
+   "name": "Women's Bantamweight",
+   "champion": "Kayla Harrison",
+   "fighters": [
+    {
+     "rank": "1",
+     "name": "Joselyne Edwards"
+    },
+    {
+     "rank": "2",
+     "name": "Ailin Perez"
+    },
+    {
+     "rank": "3",
+     "name": "Norma Dumont"
+    },
+    {
+     "rank": "4",
+     "name": "Luana Santos"
+    },
+    {
+     "rank": "5",
+     "name": "Julianna Peña"
+    },
+    {
+     "rank": "6",
+     "name": "Yana Santos"
+    },
+    {
+     "rank": "7",
+     "name": "Jacqueline Cavalcanti"
+    },
+    {
+     "rank": "8",
+     "name": "Michelle Montague"
+    },
+    {
+     "rank": "9",
+     "name": "Chelsea Chandler"
+    },
+    {
+     "rank": "10",
+     "name": "Karol Rosa"
+    },
+    {
+     "rank": "11",
+     "name": "Bia Mesquita"
+    },
+    {
+     "rank": "12",
+     "name": "Alice Pereira"
+    },
+    {
+     "rank": "13",
+     "name": "Nora Cornolle"
+    },
+    {
+     "rank": "14",
+     "name": "Macy Chiasson"
+    },
+    {
+     "rank": "15",
+     "name": "Melissa Croden"
+    }
+   ]
+  }
+ ]
+}

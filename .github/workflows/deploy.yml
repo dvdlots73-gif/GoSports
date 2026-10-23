@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 */3 * * *' # refresh BBC news every 3 hours (and UFC rankings)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - name: Check data sources
+        run: npm run check
+        continue-on-error: true
+      - name: Build site
+        run: |
+          mkdir -p _site/data
+          cp index.html app.js styles.css sw.js manifest.json icon.svg icon-*.png _site/
+          cp data/ufc-rankings.json data/news.json _site/data/
+          node scripts/news.mjs _site/data/news.json
+          node scripts/ufc-rankings.mjs _site/data/ufc-rankings.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
