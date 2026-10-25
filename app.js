@@ -209,25 +209,57 @@ async function loadNFL() {
   return { events: (d.events || []).map((ev) => espnMatch(ev, 'nfl', 'NFL', true, 'football/nfl')) };
 }
 
+// ESPN hides each round's tee time as the last stat of that round, in US time,
+// e.g. "Sun Oct 25 08:46:00 PDT 2026". Converted to a real time so it shows in UK time.
+const US_TZ = { PST: -8, PDT: -7, MST: -7, MDT: -6, CST: -6, CDT: -5, EST: -5, EDT: -4, GMT: 0, UTC: 0 };
+function teeTimeOf(round) {
+  const s = round?.statistics?.categories?.[0]?.stats?.at(-1)?.displayValue;
+  const m = /^\w{3} (\w{3}) (\d+) (\d+):(\d+):\d+ ([A-Z]{3}) (\d{4})$/.exec(s || '');
+  if (!m || US_TZ[m[5]] == null) return null;
+  const mon = 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[1]) / 3;
+  return new Date(Date.UTC(+m[6], mon, +m[2], +m[3] - US_TZ[m[5]], +m[4]));
+}
+const fmtWeekday = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, weekday: 'short' });
+
 function golfBoard(ev, tour) {
   const comp = ev.competitions?.[0] || {};
   const st = espnStatus(ev, comp);
+  const holes = (r) => r?.linescores?.length || 0; // PGA Tour lists each round's holes played so far
+  // DP World Tour sends round totals without holes, so a round with strokes counts as played.
+  const played = (r) => holes(r) > 0 || r?.value > 0;
+  // Finished for good (a suspended round is "post" but not completed, and still has tee times).
+  const done = (comp.status || ev.status)?.type?.completed === true;
+  // The round in play: the latest round anyone has started.
+  const roundNow = Math.max(0, ...(comp.competitors || []).flatMap((c) => (c.linescores || []).filter(played).map((r) => r.period)));
   const players = (comp.competitors || [])
     .slice()
     .sort((a, b) => (a.sortOrder ?? a.order ?? 999) - (b.sortOrder ?? b.order ?? 999))
-    .map((c, i) => {
-      const lines = c.linescores || [];
-      const s = c.status || {};
+    .map((c) => {
+      const rounds = c.linescores || [];
+      const cur = rounds.filter(played).at(-1); // latest round this player has started
+      const next = !done && rounds.find((r) => r.period > (cur?.period || 0) && !played(r) && teeTimeOf(r));
+      const tee = next && teeTimeOf(next);
+      let thru;
+      if (cur && cur.period === roundNow && holes(cur) && holes(cur) < 18) thru = holes(cur); // on the course
+      else if (tee) thru = dayKey(tee) === todayKey() ? time(tee) : `${fmtWeekday.format(tee)} ${time(tee)}`; // tee time, UK
+      else if (cur && cur.period < roundNow) thru = 'CUT'; // missed the cut (or withdrew)
+      else thru = cur ? 'F' : '';
       return {
-        pos: s.position?.displayName || s.position?.id || c.order || i + 1,
         name: c.athlete?.displayName || c.athlete?.shortName || '—',
         flag: c.athlete?.flag?.href,
         country: c.athlete?.flag?.alt,
         toPar: val(c.score) ?? '',
-        thru: s.thru != null ? (s.thru === 18 ? 'F' : s.thru) : (s.displayValue || ''),
-        today: val(lines[lines.length - 1]) ?? '',
+        thru,
+        // This round's score; blank while waiting to tee off (it would be yesterday's).
+        today: !tee && cur?.period === roundNow ? cur.displayValue ?? '' : '',
       };
     });
+  // ESPN no longer sends positions, so rank by score: equal scores share a place ("T2").
+  players.forEach((p, i) => {
+    const first = players.findIndex((q) => q.toPar === p.toPar);
+    const tied = players.filter((q) => q.toPar === p.toPar).length > 1;
+    p.pos = p.thru === 'CUT' ? 'CUT' : `${tied ? 'T' : ''}${first + 1}`;
+  });
   return {
     kind: 'board', sport: 'golf', league: tour, id: ev.id, name: ev.name || ev.shortName,
     start: new Date(ev.date), end: ev.endDate ? new Date(ev.endDate) : null,
@@ -576,7 +608,7 @@ function boardCard(e, limit = 10) {
   return `<div class="card">
     <div class="board-head"><div class="ttl">${esc(e.name)}</div><div class="st${e.state === 'in' ? ' live' : ''}">${esc(e.league)} · ${status}</div></div>
     ${rows.length ? `<table>
-      <thead><tr><th class="l">Pos</th><th class="l">${golf ? 'Player' : 'Driver'}</th>${golf ? '<th>To par</th><th>Thru</th><th class="hide-sm">Rd</th>' : ''}</tr></thead>
+      <thead><tr><th class="l">Pos</th><th class="l">${golf ? 'Player' : 'Driver'}</th>${golf ? '<th>To par</th><th>Thru / Tee</th><th class="hide-sm">Today</th>' : ''}</tr></thead>
       <tbody>${rows.map((r) => `<tr${isIrish(r) || isFav(r.name) ? ' class="fav"' : ''}><td class="l pos">${esc(r.pos)}</td><td class="l name-cell">${r.flag ? `<img src="${esc(r.flag)}" alt="">` : ''}${esc(r.name)}</td>${golf ? `<td class="pts">${esc(r.toPar)}</td><td>${esc(r.thru)}</td><td class="hide-sm">${esc(r.today)}</td>` : ''}</tr>`).join('')}</tbody>
     </table>` : '<div class="err">No leaderboard yet.</div>'}
   </div>`;
@@ -822,7 +854,7 @@ function irishNotes(n) {
   const rows = (g?.events || []).filter((e) => e.kind === 'board')
     .flatMap((b) => b.rows.filter(isIrish).map((r) => ({ ...r, event: b.name, live: b.state === 'in' })));
   const playing = !g ? '<div class="empty">Loading…</div>'
-    : rows.length ? `<div class="card">${rows.map((r) => `<div class="list-row"><div class="main"><div class="a">${esc(r.name)}</div><div class="b">${esc(r.event)}</div></div><div class="side${r.live ? ' live' : ''}">${esc(r.pos)} · ${esc(r.toPar)}${r.thru ? ` · thru ${esc(r.thru)}` : ''}</div></div>`).join('')}</div>`
+    : rows.length ? `<div class="card">${rows.map((r) => `<div class="list-row"><div class="main"><div class="a">${esc(r.name)}</div><div class="b">${esc(r.event)}</div></div><div class="side${r.live ? ' live' : ''}">${esc(r.pos)} · ${esc(r.toPar)}${r.thru === '' ? '' : /:/.test(r.thru) ? ` · tees off ${esc(r.thru)}` : /^\d+$/.test(r.thru) ? ` · thru ${esc(r.thru)}` : ` · ${esc(r.thru)}`}</div></div>`).join('')}</div>`
     : '<div class="hint">No Irish golfers in this week\'s PGA or DP World Tour fields.</div>';
   const news = mergeNews(n.general.golf || [], n.bbc.golf || []).filter((a) => IRISH_NEWS.test(`${a.title} ${a.desc}`)).slice(0, 5);
   return playing + `<div style="height:8px"></div>` + newsCard(news, 'No recent news about Irish golfers.');
