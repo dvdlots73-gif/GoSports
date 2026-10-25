@@ -152,7 +152,6 @@ function espnMatch(ev, sport, league, awayFirst, path) {
     kind: 'match', sport, league, id: ev.id, path, // path: ESPN league, e.g. soccer/eng.1 (for the match page)
     start: new Date(ev.date), ...st,
     sides: awayFirst ? [b, a] : [a, b],
-    tv: [...new Set((comp.broadcasts || []).flatMap((x) => x.names || []))].join(', '),
     venue: comp.venue?.fullName,
     note: comp.notes?.[0]?.headline,
     // NFL: game's top passer / rusher / receiver, e.g. "Pass: C.J. Stroud 24/34, 312 YDS, 3 TD".
@@ -494,7 +493,7 @@ async function refresh(force = false) {
   $('#refresh').classList.add('spin');
   // News needs golf leaderboards for the Irish golfers card; Tables loads its own data.
   const wanted = state.tab === 'tables' ? [] : state.tab === 'news' ? activeSports().filter((s) => s === 'golf') : activeSports();
-  await Promise.all(wanted.map(async (id) => {
+  await Promise.all([loadTV(), ...wanted.map(async (id) => {
     const cur = state.data[id];
     if (!force && cur && Date.now() - cur.at < 25e3) return;
     try {
@@ -502,7 +501,7 @@ async function refresh(force = false) {
     } catch (e) {
       state.data[id] = { events: cur?.events || [], error: e.message || 'Failed to load', at: Date.now() };
     }
-  }));
+  })]);
   if (state.tab === 'tables') {
     const key = tableKey();
     if (!['golf', 'boxing', 'darts'].includes(key) && (force || !state.tables[key] || Date.now() - state.tables[key].at > 5 * 60e3)) {
@@ -550,7 +549,8 @@ function teamRow(t) {
 
 function matchRow(e) {
   const showScore = e.state !== 'pre';
-  const meta = [e.state === 'in' && e.sport === 'nfl' ? e.text : '', e.note, e.state === 'pre' ? e.tv : ''].filter(Boolean).join(' · ');
+  const tv = e.state === 'pre' && e.sport === 'football' ? ukTV(e.start, e.sides[0]?.full, e.sides[1]?.full) : '';
+  const meta = [e.state === 'in' && e.sport === 'nfl' ? e.text : '', e.note, tv && `📺 ${tv}`].filter(Boolean).join(' · ');
   return `<div class="match"${e.path ? ` data-match="${esc(`${e.path}/${e.id}`)}"` : ''}>
     ${whenCell(e)}
     <div class="teams">${e.sides.map(teamRow).join('')}</div>
@@ -965,6 +965,39 @@ function ensureLoaded(id) {
     .finally(() => { pendingLoads.delete(id); render(); });
 }
 
+// ---------- UK TV (football) ----------
+// data/tv.json is rebuilt every 3 hours from live-footballontv.com (scripts/tv.mjs); ESPN only lists US channels.
+// A team plays at most once a day, so UK date + either team identifies the game.
+
+// The listings use short names for a few clubs (checked against all 92 league clubs, Oct 2026).
+const TV_ALIASES = { 'mk dons': 'milton keynes dons', qpr: 'queens park rangers', 'west brom': 'west bromwich albion', wolves: 'wolverhampton wanderers' };
+const teamKey = (n) => {
+  const k = String(n || '').toLowerCase().replace(/&/g, ' and ').replace(/\b(afc|fc)\b/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  return TV_ALIASES[k] || k;
+};
+
+async function loadTV() {
+  if (state.tv && Date.now() - state.tv.at < 30 * 60e3) return;
+  try {
+    const d = await getJSON('data/tv.json');
+    const index = new Map();
+    for (const f of d.fixtures || []) for (const t of [f.home, f.away]) index.set(`${f.date}|${teamKey(t)}`, f.channels);
+    state.tv = { data: d, index, lastDay: d.fixtures?.at(-1)?.date || '', at: Date.now() };
+  } catch {
+    state.tv = { at: Date.now() }; // no listings: rows just show no channel
+  }
+}
+
+/** UK channels for a football match, e.g. "Sky Sports Main Event, Sky Sports Premier League". Lists show the first two. */
+function ukTV(start, home, away, all = false) {
+  const idx = state.tv?.index;
+  if (!idx || isNaN(start)) return '';
+  const day = dayKey(start);
+  const ch = idx.get(`${day}|${teamKey(home)}`) || idx.get(`${day}|${teamKey(away)}`);
+  if (!ch) return '';
+  return all || ch.length <= 2 ? ch.join(', ') : `${ch.slice(0, 2).join(', ')} +${ch.length - 2}`;
+}
+
 // ---------- match page (tap a football or NFL game) ----------
 // Everything comes from ESPN's per-match summary, fetched when the page opens and every 30s while live.
 
@@ -1167,11 +1200,14 @@ function commentaryTab(d) {
 function infoTab(d, comp) {
   let html = '';
   // Venue, attendance, TV
-  const tv = [...new Set((d.broadcasts || []).map((b) => b.media?.shortName || b.media?.name).filter(Boolean))].join(', ');
+  // UK TV: football from data/tv.json; NFL has no free UK listings, but every game is on DAZN.
+  const [h, a] = (() => { const cs = comp.competitors || []; return ['home', 'away'].map((s) => cs.find((c) => c.homeAway === s)?.team?.displayName); })();
+  const tv = isNFL() ? 'Every game live on DAZN (NFL Game Pass); selected games on Sky Sports NFL'
+    : ukTV(new Date(comp.date), h, a, true) ||(state.tv?.data && dayKey(new Date(comp.date)) <= state.tv.lastDay ? 'Not on UK TV' : '');
   const facts = [
     d.gameInfo?.venue?.fullName && ['Venue', [d.gameInfo.venue.fullName, d.gameInfo.venue.address?.city].filter(Boolean).join(', ')],
     d.gameInfo?.attendance && ['Attendance', Number(d.gameInfo.attendance).toLocaleString('en-GB')],
-    tv && ['TV / streaming', tv],
+    tv && ['UK TV', tv],
     comp.date && ['Kick-off', `${fmtDay.format(new Date(comp.date))} ${time(new Date(comp.date))}`],
   ].filter(Boolean);
   if (facts.length) html += section('Match', '', `<div class="card">${facts.map(([k, v]) => row(esc(v), '', esc(k), ' fact')).join('')}</div>`);

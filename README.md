@@ -18,6 +18,7 @@ Tap a team or driver in a table to make it a favourite. Its matches are then pin
 | F1 schedule & standings | [Jolpica](https://github.com/jolpica/jolpica-f1) |
 | Boxing, PDC darts | [TheSportsDB](https://www.thesportsdb.com) (free test key; darts shows the latest and next tournament day only) |
 | UFC rankings | ufc.com/rankings, scraped by GitHub Actions |
+| UK TV channels (football) | live-footballontv.com, fetched by GitHub Actions every 3 hours (ESPN only lists US channels) |
 | Oldham club news | oldhamathletic.co.uk news API (read live in the browser) |
 | News | ESPN news endpoints, plus BBC Sport RSS (Oldham, Man Utd, golf, boxing, darts) and the Oldham fans' forum (shown as opinion) fetched by GitHub Actions every 3 hours |
 
@@ -32,6 +33,7 @@ On your phone, open the Pages URL and use **Add to Home Screen**. It then opens 
 
 ```
 npm run news            # optional: refresh data/news.json
+npm run tv              # optional: refresh data/tv.json (UK TV channels)
 python -m http.server 8123
 ```
 Then open http://localhost:8123 (port 8000 is often taken on Windows, e.g. by the Epic Games launcher).

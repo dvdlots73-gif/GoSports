@@ -5,6 +5,7 @@
   "scripts": {
     "ufc": "node scripts/ufc-rankings.mjs data/ufc-rankings.json",
     "news": "node scripts/news.mjs data/news.json",
+    "tv": "node scripts/tv.mjs data/tv.json",
     "check": "node scripts/check-apis.mjs"
   },
   "dependencies": {

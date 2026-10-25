@@ -32,8 +32,9 @@ jobs:
         run: |
           mkdir -p _site/data
           cp index.html app.js styles.css sw.js manifest.json icon.svg icon-*.png _site/
-          cp data/ufc-rankings.json data/news.json _site/data/
+          cp data/ufc-rankings.json data/news.json data/tv.json _site/data/
           node scripts/news.mjs _site/data/news.json
+          node scripts/tv.mjs _site/data/tv.json
           node scripts/ufc-rankings.mjs _site/data/ufc-rankings.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
