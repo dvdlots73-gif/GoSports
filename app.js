@@ -139,7 +139,7 @@ function espnStatus(ev, comp) {
   return { state: t.state || 'pre', text: t.shortDetail || t.detail || t.description || '', clock: s.displayClock };
 }
 
-function espnMatch(ev, sport, league, awayFirst) {
+function espnMatch(ev, sport, league, awayFirst, path) {
   const comp = ev.competitions?.[0] || {};
   const cs = comp.competitors || [];
   const home = cs.find((c) => c.homeAway === 'home') || cs[0];
@@ -149,7 +149,7 @@ function espnMatch(ev, sport, league, awayFirst) {
   a.inc = incidents(comp, home?.team?.id);
   b.inc = incidents(comp, away?.team?.id);
   return {
-    kind: 'match', sport, league, id: ev.id,
+    kind: 'match', sport, league, id: ev.id, path, // path: ESPN league, e.g. soccer/eng.1 (for the match page)
     start: new Date(ev.date), ...st,
     sides: awayFirst ? [b, a] : [a, b],
     tv: [...new Set((comp.broadcasts || []).flatMap((x) => x.names || []))].join(', '),
@@ -198,7 +198,7 @@ async function loadFootball() {
   const events = [], errors = [];
   res.forEach((r, i) => {
     const l = FOOTBALL_LEAGUES[i];
-    if (r.status === 'fulfilled') (r.value.events || []).forEach((ev) => events.push(espnMatch(ev, 'football', l.name, false)));
+    if (r.status === 'fulfilled') (r.value.events || []).forEach((ev) => events.push(espnMatch(ev, 'football', l.name, false, `soccer/${l.code}`)));
     else errors.push(l.name);
   });
   if (errors.length === FOOTBALL_LEAGUES.length) throw new Error('No football data');
@@ -207,7 +207,7 @@ async function loadFootball() {
 
 async function loadNFL() {
   const d = await espnWindow('football/nfl');
-  return { events: (d.events || []).map((ev) => espnMatch(ev, 'nfl', 'NFL', true)) };
+  return { events: (d.events || []).map((ev) => espnMatch(ev, 'nfl', 'NFL', true, 'football/nfl')) };
 }
 
 function golfBoard(ev, tour) {
@@ -514,6 +514,7 @@ async function refresh(force = false) {
     try { state.news = { ...(await loadNews()), at: Date.now() }; }
     catch (e) { state.news = { error: e.message || 'Failed to load', at: Date.now() }; }
   }
+  if (state.match) await loadSummary(force);
   state.updated = new Date();
   state.loading = false;
   $('#refresh').classList.remove('spin');
@@ -525,7 +526,8 @@ async function refresh(force = false) {
 let timer;
 function schedule() {
   clearTimeout(timer);
-  const anyLive = Object.values(state.data).some((d) => d.events?.some((e) => e.state === 'in'));
+  const anyLive = Object.values(state.data).some((d) => d.events?.some((e) => e.state === 'in'))
+    || sumComp()?.status?.type?.state === 'in';
   timer = setTimeout(() => refresh(true), anyLive ? 30e3 : 5 * 60e3);
 }
 
@@ -549,7 +551,7 @@ function teamRow(t) {
 function matchRow(e) {
   const showScore = e.state !== 'pre';
   const meta = [e.state === 'in' && e.sport === 'nfl' ? e.text : '', e.note, e.state === 'pre' ? e.tv : ''].filter(Boolean).join(' · ');
-  return `<div class="match">
+  return `<div class="match"${e.path ? ` data-match="${esc(`${e.path}/${e.id}`)}"` : ''}>
     ${whenCell(e)}
     <div class="teams">${e.sides.map(teamRow).join('')}</div>
     <div class="scores${e.state === 'in' ? ' live' : ''}">${showScore ? e.sides.map((s) => `<span>${esc(s.score ?? '')}</span>`).join('') : ''}</div>
@@ -806,7 +808,7 @@ function newsCard(items, empty = 'No recent news.') {
 }
 
 function teamNotes(t, bbc) {
-  const evs = t.sched.map((ev) => espnMatch(ev, t.sport, t.name, t.sport === 'nfl')).sort((a, b) => a.start - b.start);
+  const evs = t.sched.map((ev) => espnMatch(ev, t.sport, t.name, t.sport === 'nfl', t.path)).sort((a, b) => a.start - b.start);
   const last = evs.filter((e) => e.state === 'post').pop();
   const next = evs.find((e) => e.state === 'in') || evs.find((e) => e.state === 'pre');
   const games = [last, next].filter(Boolean);
@@ -963,6 +965,320 @@ function ensureLoaded(id) {
     .finally(() => { pendingLoads.delete(id); render(); });
 }
 
+// ---------- match page (tap a football or NFL game) ----------
+// Everything comes from ESPN's per-match summary, fetched when the page opens and every 30s while live.
+
+const MATCH_PATH = /^(soccer\/[a-z0-9._]+|football\/nfl)$/; // only leagues we know, never arbitrary URLs
+
+function openFromHash() {
+  const parts = decodeURIComponent(location.hash.slice(1)).split('/');
+  const id = parts.pop(), path = parts.slice(1).join('/');
+  const ok = parts[0] === 'match' && /^\d+$/.test(id) && MATCH_PATH.test(path);
+  if (!ok) { if (state.match) { state.match = null; state.pushedMatch = false; renderSheet(); } return; }
+  if (state.match?.id === id) return;
+  state.match = { path, id, tab: null };
+  $('#sheet').scrollTop = 0;
+  renderSheet();
+  loadSummary().then(() => { renderSheet(); schedule(); });
+}
+
+function closeMatch() {
+  // Tapping a game pushed a history entry, so Back (browser, Android) and ← behave the same.
+  // Opened from a saved link there's nothing to go back to, so just clear the hash.
+  if (state.pushedMatch) { state.pushedMatch = false; history.back(); return; }
+  history.replaceState(null, '', location.pathname + location.search);
+  state.match = null;
+  renderSheet();
+}
+
+async function loadSummary(force = false) {
+  const m = state.match;
+  if (!m) return;
+  const key = `${m.path}/${m.id}`;
+  if (!force && state.sum?.key === key && !state.sum.error && Date.now() - state.sum.at < 25e3) return;
+  try {
+    const data = await getJSON(`${ESPN}/${m.path}/summary?event=${m.id}`);
+    state.sum = { key, data, at: Date.now() };
+  } catch (e) {
+    state.sum = { key, error: e.message || 'Failed to load', at: Date.now() };
+  }
+}
+
+const sumData = () => (state.match && state.sum?.key === `${state.match.path}/${state.match.id}` ? state.sum : null);
+const sumComp = () => sumData()?.data?.header?.competitions?.[0];
+const isNFL = () => state.match?.path === 'football/nfl';
+
+function renderSheet() {
+  const el = $('#sheet');
+  document.body.classList.toggle('sheet-open', !!state.match);
+  if (!state.match) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  const s = sumData();
+  let html = `<div class="sheet-top"><button class="icon-btn" data-close aria-label="Back">←</button><div class="sheet-ttl">${isNFL() ? 'NFL' : 'Match'}</div></div><div class="sheet-body">`;
+  if (!s) html += '<div class="empty">Loading…</div>';
+  else if (s.error) html += `<div class="err">⚠︎ Couldn't load this match (${esc(s.error)}).</div>`;
+  else {
+    const d = s.data, comp = sumComp() || {};
+    const tabs = isNFL() ? nflTabs(d, comp) : footballTabs(d, comp);
+    const tab = tabs.find((t) => t.id === state.match.tab) || tabs.find((t) => t.def) || tabs[0];
+    html += matchHeader(d, comp) +
+      `<div class="seg mtabs">${tabs.map((t) => `<button data-mtab="${t.id}" class="${t.id === tab.id ? 'on' : ''}">${t.label}</button>`).join('')}</div>` +
+      tab.render();
+  }
+  el.innerHTML = html + '</div>';
+}
+
+// Home first for football, away first for NFL (matching the lists).
+function orderedSides(comp) {
+  const cs = comp.competitors || [];
+  const home = cs.find((c) => c.homeAway === 'home') || cs[0], away = cs.find((c) => c.homeAway === 'away') || cs[1];
+  return isNFL() ? [away, home] : [home, away];
+}
+const teamShort = (t = {}) => t.shortDisplayName || t.abbreviation || t.displayName || '';
+const logoOf = (t = {}) => t.logos?.[0]?.href || t.logo;
+
+function matchHeader(d, comp) {
+  const st = comp.status?.type || {};
+  const sides = orderedSides(comp);
+  const pre = st.state === 'pre';
+  const start = new Date(comp.date);
+  const team = (c) => `<div class="mh-team">${logoOf(c?.team) ? `<img src="${esc(logoOf(c.team))}" alt="">` : ''}<div>${esc(teamShort(c?.team))}</div></div>`;
+  const status = st.state === 'in' ? `<span class="dot"></span> ${esc(st.shortDetail || 'Live')}` : esc(pre ? `${dayLabel(start)} ${time(start)}` : st.shortDetail || 'FT');
+  const venue = d.gameInfo?.venue?.fullName;
+  return `<div class="card mh">
+    ${team(sides[0])}
+    <div class="mh-score${st.state === 'in' ? ' live' : ''}">${pre ? 'v' : `${esc(sides[0]?.score ?? '')} – ${esc(sides[1]?.score ?? '')}`}</div>
+    ${team(sides[1])}
+    <div class="mh-st${st.state === 'in' ? ' live' : ''}">${status}${venue ? ` · ${esc(venue)}` : ''}</div>
+  </div>`;
+}
+
+const hint = (t) => `<div class="hint">${t}</div>`;
+const row = (a, b, side = '', cls = '') => `<div class="list-row${cls}"><div class="main"><div class="a">${a}</div>${b ? `<div class="b">${b}</div>` : ''}</div><div class="side">${side}</div></div>`;
+
+// ----- football -----
+
+function footballTabs(d, comp) {
+  const st = comp.status?.type?.state;
+  const hasLineups = (d.rosters || []).some((r) => r.roster?.length);
+  return [
+    { id: 'lineups', label: 'Line-ups', def: st === 'pre' && hasLineups, render: () => lineupsTab(d) },
+    { id: 'timeline', label: 'Timeline', def: st !== 'pre', render: () => timelineTab(d, comp) },
+    { id: 'stats', label: 'Stats', render: () => statsTab(d) },
+    { id: 'commentary', label: 'Commentary', render: () => commentaryTab(d) },
+    { id: 'info', label: 'Info', def: st === 'pre' && !hasLineups, render: () => infoTab(d, comp) },
+  ];
+}
+
+function lineupsTab(d) {
+  const rosters = (d.rosters || []).slice().sort((a, b) => (a.homeAway === 'home' ? -1 : 1) - (b.homeAway === 'home' ? -1 : 1));
+  if (!rosters.some((r) => r.roster?.length)) return hint('Line-ups usually appear about an hour before kick-off.');
+  return rosters.map((r) => {
+    const players = r.roster || [];
+    const starters = players.filter((p) => p.starter).sort((a, b) => Number(a.formationPlace || 99) - Number(b.formationPlace || 99));
+    const bench = players.filter((p) => !p.starter);
+    const marks = (p) => (p.plays || []).map((pl) => {
+      const m = pl.clock?.displayValue || '';
+      if (pl.redCard) return `🟥 ${m}`;
+      if (pl.yellowCard) return `🟨 ${m}`;
+      // A goal appears on both the scorer (didScore) and the assister (didAssist).
+      if (pl.didScore) return `⚽${pl.ownGoal ? ' og' : pl.penaltyKick ? ' pen' : ''} ${m}`;
+      if (pl.didAssist) return `🅰️ ${m}`;
+      if (pl.substitution) return `${p.starter ? '↓' : '↑'} ${m}`;
+      return '';
+    }).filter(Boolean).join(' ');
+    const player = (p) => row(
+      `<span class="num">${esc(p.jersey ?? '')}</span> ${esc(p.athlete?.displayName || '')}`,
+      '', `${esc(marks(p))}${p.position?.abbreviation ? ` <span class="pos">${esc(p.position.abbreviation)}</span>` : ''}`,
+      p.starter || p.subbedIn ? '' : ' dim',
+    );
+    return `<div class="card">
+      <div class="board-head"><div class="ttl">${esc(r.team?.displayName || '')}</div><div class="st">${esc(r.formation || '')}</div></div>
+      ${starters.map(player).join('')}
+      ${bench.length ? `<div class="list-row sub">Substitutes</div>${bench.map(player).join('')}` : ''}
+    </div>`;
+  }).join('') + hint('⚽ goal · 🅰️ assist · 🟨 booked · 🟥 sent off · ↓ subbed off · ↑ came on');
+}
+
+function timelineTab(d, comp) {
+  const shortById = Object.fromEntries((comp.competitors || []).map((c) => [c.team?.id, teamShort(c.team)]));
+  const PHASE = { Kickoff: 'Kick-off', Halftime: 'Half-time', 'Start 2nd Half': 'Second half', 'End Regular Time': 'Full-time', 'Start Extra Time': 'Extra time', 'End Extra Time': 'End of extra time' };
+  const rows = (d.keyEvents || []).map((k) => {
+    const type = k.type?.text || '';
+    const min = esc(k.clock?.displayValue || '');
+    const who = (i) => esc(k.participants?.[i]?.athlete?.displayName || '');
+    const team = esc(shortById[k.team?.id] || k.team?.displayName || '');
+    if (PHASE[type]) return `<div class="list-row sub"><div class="main">${PHASE[type]}</div><div class="side">${min}</div></div>`;
+    if (type.startsWith('Goal') || k.scoringPlay) {
+      const assist = k.participants?.[1] ? ` · assist ${who(1)}` : '';
+      const kind = /own goal/i.test(type) ? ' (og)' : /penalty/i.test(type) ? ' (pen)' : '';
+      return row(`⚽ ${who(0)}${kind}`, `${team}${assist}`, min);
+    }
+    if (type === 'Red Card') return row(`🟥 ${who(0)}`, team, min);
+    if (type === 'Yellow Card') return row(`🟨 ${who(0)}`, team, min);
+    if (type === 'Substitution') return row(`🔄 ${who(0)} <span class="muted">for</span> ${who(1)}`, team, min);
+    if (/penalty/i.test(type)) return row(`⚪ ${esc(type)}`, `${team}${who(0) ? ` · ${who(0)}` : ''}`, min); // missed / saved pens
+    return '';
+  }).filter(Boolean);
+  return rows.length ? `<div class="card">${rows.join('')}</div>` : hint('The timeline starts at kick-off.');
+}
+
+const FOOTBALL_STATS = [
+  ['possessionPct', 'Possession', '%'], ['totalShots', 'Shots'], ['shotsOnTarget', 'On target'], ['wonCorners', 'Corners'],
+  ['totalPasses', 'Passes'], ['passAcc', 'Pass accuracy', '%'], ['totalTackles', 'Tackles'], ['interceptions', 'Interceptions'],
+  ['saves', 'Saves'], ['foulsCommitted', 'Fouls'], ['offsides', 'Offsides'], ['yellowCards', 'Yellow cards'], ['redCards', 'Red cards'],
+];
+
+function statsTab(d) {
+  const teams = (d.boxscore?.teams || []).slice().sort((a, b) => (a.homeAway === 'away') - (b.homeAway === 'away'));
+  if (teams.length < 2) return hint('Stats appear once the match starts.');
+  const val = (t, name) => {
+    const by = (n) => t.statistics?.find((s) => s.name === n);
+    if (name === 'passAcc') { const a = +by('accuratePasses')?.displayValue, n = +by('totalPasses')?.displayValue; return n ? Math.round((a / n) * 100) : null; }
+    const s = by(name);
+    return s ? s.displayValue : null;
+  };
+  const head = `<div class="stat-head"><span>${esc(teamShort(teams[0].team))}</span><span>${esc(teamShort(teams[1].team))}</span></div>`;
+  // Before kick-off ESPN sends season totals instead (goals for/against etc.): list those as they come.
+  if (val(teams[0], 'possessionPct') == null) {
+    const rows = (teams[0].statistics || []).map((s, i) => statRow(s.label, s.displayValue, teams[1].statistics?.[i]?.displayValue));
+    return `<div class="card stats">${head}${rows.join('')}</div>` + hint('Season so far. Match stats appear once it starts.');
+  }
+  const rows = FOOTBALL_STATS.map(([name, label, unit = '']) => {
+    const a = val(teams[0], name), b = val(teams[1], name);
+    return a == null || b == null ? '' : statRow(label, `${a}${unit}`, `${b}${unit}`);
+  });
+  return `<div class="card stats">${head}${rows.join('')}</div>`;
+}
+
+function statRow(label, a, b) {
+  const x = parseFloat(a) || 0, y = parseFloat(b) || 0;
+  const pa = x + y ? Math.round((x / (x + y)) * 100) : 50;
+  return `<div class="stat"><span class="sv${x > y ? ' lead' : ''}">${esc(a ?? '')}</span><span class="sl">${esc(label)}</span><span class="sv${y > x ? ' lead' : ''}">${esc(b ?? '')}</span>
+    <div class="bar"><i style="width:${pa}%"></i><i style="width:${100 - pa}%"></i></div></div>`;
+}
+
+function commentaryTab(d) {
+  const items = (d.commentary || []).slice().reverse(); // newest first
+  if (!items.length) return hint('Commentary starts around kick-off.');
+  return `<div class="card">${items.map((c) => row(esc(c.text || ''), '', esc(c.time?.displayValue || ''), ' comm')).join('')}</div>`;
+}
+
+function infoTab(d, comp) {
+  let html = '';
+  // Venue, attendance, TV
+  const tv = [...new Set((d.broadcasts || []).map((b) => b.media?.shortName || b.media?.name).filter(Boolean))].join(', ');
+  const facts = [
+    d.gameInfo?.venue?.fullName && ['Venue', [d.gameInfo.venue.fullName, d.gameInfo.venue.address?.city].filter(Boolean).join(', ')],
+    d.gameInfo?.attendance && ['Attendance', Number(d.gameInfo.attendance).toLocaleString('en-GB')],
+    tv && ['TV / streaming', tv],
+    comp.date && ['Kick-off', `${fmtDay.format(new Date(comp.date))} ${time(new Date(comp.date))}`],
+  ].filter(Boolean);
+  if (facts.length) html += section('Match', '', `<div class="card">${facts.map(([k, v]) => row(esc(v), '', esc(k), ' fact')).join('')}</div>`);
+
+  // Form: last five results each
+  if (d.lastFiveGames?.length) {
+    html += section('Form', 'last 5, most recent on the right', `<div class="card">${d.lastFiveGames.map((t) => {
+      const evs = (t.events || []).slice().sort((a, b) => new Date(a.gameDate) - new Date(b.gameDate)); // oldest → newest, left to right
+      const pills = evs.map((e) => `<span class="pill ${esc((e.gameResult || '').toLowerCase())}" title="${esc(`${e.atVs} ${e.opponent?.displayName || ''} ${e.score}`)}">${esc(e.gameResult || '?')}</span>`).join('');
+      const detail = evs.map((e) => `${e.score} ${e.atVs === '@' ? '@' : 'v'} ${e.opponent?.abbreviation || ''}`).join(' · ');
+      return row(`${esc(t.team?.displayName || '')} <span class="pills">${pills}</span>`, esc(detail));
+    }).join('')}</div>`);
+  }
+
+  // Head-to-head
+  const series = d.seasonseries?.[0];
+  if (series?.events?.length) {
+    html += section('Head-to-head', series.summary || '', `<div class="card">${series.events.slice(0, 6).map((e) => {
+      const cs = (e.competitors || []);
+      const line = cs.map((c) => `${c.team?.abbreviation || ''} ${c.score ?? ''}`).join(' – ');
+      return row(esc(line), '', esc((e.date || '').slice(0, 10).split('-').reverse().join('/')));
+    }).join('')}</div>`);
+  }
+
+  html += miniTable(d, comp);
+  return html || hint('No extra info for this match yet.');
+}
+
+// The league table around both teams (two places either side of each); the whole division for NFL.
+function miniTable(d, comp) {
+  const group = d.standings?.groups?.[0];
+  const entries = group?.standings?.entries || [];
+  if (!entries.length) return '';
+  const names = (comp.competitors || []).flatMap((c) => [c.team?.displayName, c.team?.location, c.team?.shortDisplayName, c.team?.name]).filter(Boolean);
+  const mine = (e) => names.includes(e.team) || names.includes(e.team?.displayName);
+  const stat = (e, n) => e.stats?.find((s) => s.name === n || s.type === n)?.displayValue ?? '';
+  const idx = entries.map((e, i) => (mine(e) ? i : -1)).filter((i) => i >= 0);
+  const keep = isNFL() ? entries.map((_, i) => i) : entries.map((_, i) => i).filter((i) => idx.some((j) => Math.abs(i - j) <= 2));
+  const head = isNFL() ? '<th class="l">#</th><th class="l">Team</th><th>W-L</th><th>PCT</th>' : '<th class="l">#</th><th class="l">Team</th><th>P</th><th>GD</th><th>Pts</th>';
+  const body = keep.map((i) => {
+    const e = entries[i];
+    const name = esc(typeof e.team === 'string' ? e.team : e.team?.displayName || '');
+    const cells = isNFL() ? `<td>${esc(stat(e, 'overall'))}</td><td>${esc(stat(e, 'winPercent'))}</td>`
+      : `<td>${esc(stat(e, 'gamesPlayed'))}</td><td>${esc(stat(e, 'pointDifferential'))}</td><td class="pts">${esc(stat(e, 'points'))}</td>`;
+    return `<tr class="${mine(e) ? 'hl' : ''}"><td class="l pos">${isNFL() ? i + 1 : esc(stat(e, 'rank') || i + 1)}</td><td class="l name-cell">${name}</td>${cells}</tr>`;
+  }).join('');
+  return section('Table', group.header || '', `<div class="card"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`);
+}
+
+// ----- NFL -----
+
+function nflTabs(d, comp) {
+  const st = comp.status?.type?.state;
+  return [
+    { id: 'scoring', label: 'Scoring', def: st !== 'pre', render: () => nflScoringTab(d, comp) },
+    { id: 'stats', label: 'Stats', render: () => nflStatsTab(d) },
+    { id: 'players', label: 'Players', render: () => nflPlayersTab(d) },
+    { id: 'info', label: 'Info', def: st === 'pre', render: () => nflInfoTab(d, comp) },
+  ];
+}
+
+function nflScoringTab(d, comp) {
+  const sides = orderedSides(comp);
+  const qs = Math.max(4, ...sides.map((c) => c?.linescores?.length || 0));
+  const qName = (i) => (i < 4 ? `Q${i + 1}` : 'OT');
+  const box = sides.some((c) => c?.linescores?.length) ? `<div class="card"><table><thead><tr><th class="l">Team</th>${[...Array(qs)].map((_, i) => `<th>${qName(i)}</th>`).join('')}<th>T</th></tr></thead><tbody>${
+    sides.map((c) => `<tr><td class="l name-cell">${esc(teamShort(c?.team))}</td>${[...Array(qs)].map((_, i) => `<td>${esc(c?.linescores?.[i]?.displayValue ?? '')}</td>`).join('')}<td class="pts">${esc(c?.score ?? '')}</td></tr>`).join('')
+  }</tbody></table></div>` : '';
+  const plays = d.scoringPlays || [];
+  if (!plays.length) return box + hint('Scoring plays appear once the game starts.');
+  const [aw, hm] = sides;
+  const byQ = new Map();
+  for (const p of plays) { const q = p.period?.number || 0; if (!byQ.has(q)) byQ.set(q, []); byQ.get(q).push(p); }
+  return box + [...byQ].map(([q, list]) => section(q > 4 ? 'Overtime' : `Quarter ${q}`, '', `<div class="card">${list.map((p) =>
+    row(`<b>${esc(p.team?.abbreviation || '')}</b> ${esc(p.scoringType?.abbreviation || '')} · ${esc(p.text || '')}`,
+      esc(`${p.clock?.displayValue || ''} · ${teamShort(aw?.team)} ${p.awayScore}–${p.homeScore} ${teamShort(hm?.team)}`))).join('')}</div>`)).join('');
+}
+
+function nflStatsTab(d) {
+  const teams = d.boxscore?.teams || []; // ESPN lists away then home, like our rows
+  if (teams.length < 2 || !teams[0].statistics?.length) return hint('Team stats appear once the game starts.');
+  const head = `<div class="stat-head"><span>${esc(teamShort(teams[0].team))}</span><span>${esc(teamShort(teams[1].team))}</span></div>`;
+  return `<div class="card stats">${head}${teams[0].statistics.map((s, i) => statRow(s.label, s.displayValue, teams[1].statistics[i]?.displayValue)).join('')}</div>`;
+}
+
+function nflPlayersTab(d) {
+  const groups = d.boxscore?.players || [];
+  if (!groups.length) return hint('Player stats appear once the game starts.');
+  const CATS = { passing: 'Passing', rushing: 'Rushing', receiving: 'Receiving', defensive: 'Defence', kicking: 'Kicking' };
+  return groups.map((g) => section(esc(g.team?.displayName || ''), '', (g.statistics || []).filter((c) => CATS[c.name] && c.athletes?.length).map((c) =>
+    `<div class="card"><table><thead><tr><th class="l">${CATS[c.name]}</th>${(c.labels || []).slice(0, 5).map((l) => `<th>${esc(l)}</th>`).join('')}</tr></thead><tbody>${
+      c.athletes.slice(0, c.name === 'defensive' ? 5 : 4).map((a) => `<tr><td class="l name-cell">${esc(a.athlete?.displayName || '')}</td>${(a.stats || []).slice(0, 5).map((v) => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')
+    }</tbody></table></div>`).join(''))).join('');
+}
+
+function nflInfoTab(d, comp) {
+  let html = infoTab({ ...d, standings: null, seasonseries: null }, comp); // venue, TV, kick-off
+  if (html.includes('class="hint"')) html = '';
+  const inj = (d.injuries || []).filter((t) => t.injuries?.length);
+  if (inj.length) {
+    html += section('Injuries', '', inj.map((t) => `<div class="card"><div class="board-head"><div class="ttl">${esc(t.team?.displayName || '')}</div></div>${
+      t.injuries.slice(0, 10).map((i) => row(esc(i.athlete?.displayName || ''), esc([i.athlete?.position?.abbreviation, i.details?.type].filter(Boolean).join(' · ')), esc(i.status || ''))).join('')
+    }</div>`).join(''));
+  }
+  return html + miniTable(d, comp) || hint('No extra info for this game yet.');
+}
+
 // ---------- main render ----------
 
 function render() {
@@ -980,6 +1296,7 @@ function render() {
   else html = renderTables();
   if (state.updated && !loadingFirst) html += `<div class="updated">Updated ${esc(time(state.updated))} · UK time</div>`;
   $('#view').innerHTML = html;
+  renderSheet();
 }
 
 // ---------- events ----------
@@ -1014,8 +1331,17 @@ $('#view').addEventListener('click', (ev) => {
     return;
   }
   const fav = ev.target.closest('[data-fav]');
-  if (fav && fav.dataset.fav) toggleFav(fav.dataset.fav);
+  if (fav && fav.dataset.fav) { toggleFav(fav.dataset.fav); return; }
+  const m = ev.target.closest('[data-match]');
+  if (m) { state.pushedMatch = true; location.hash = `match/${m.dataset.match}`; } // hashchange opens it, so Back closes it
 });
+
+$('#sheet').addEventListener('click', (ev) => {
+  if (ev.target.closest('[data-close]')) { closeMatch(); return; }
+  const t = ev.target.closest('[data-mtab]');
+  if (t) { state.match.tab = t.dataset.mtab; renderSheet(); $('#sheet').scrollTop = 0; }
+});
+window.addEventListener('hashchange', openFromHash);
 
 $('#refresh').addEventListener('click', () => refresh(true));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
@@ -1023,5 +1349,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 syncAlertTeams();
+openFromHash();
 render();
 refresh();

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.webkit.JavascriptInterface
+import android.window.OnBackInvokedDispatcher
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -46,7 +47,18 @@ class MainActivity : Activity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
         thread { Alerts.plan(this) }
+
+        // Back closes an open match page (a history entry in the site) before leaving the app.
+        // Android 13+ (and every app targeting 16) uses this callback instead of onBackPressed.
+        if (Build.VERSION.SDK_INT >= 33) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) { backOrFinish() }
+        }
     }
+
+    private fun backOrFinish() { if (web.canGoBack()) web.goBack() else finish() }
+
+    @Deprecated("Android 12 and older only; newer versions use the callback above")
+    override fun onBackPressed() = backOrFinish()
 
     /** The site tells the app which football teams to alert for: followed teams plus ★ favourites. */
     inner class Bridge {
